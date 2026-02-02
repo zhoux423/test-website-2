@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            line-height: 1.6;
+            padding: 24px;
+            min-height: 100vh;
+        }
+        .container { max-width: 860px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #58a6ff 0%, #a371f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle { color: #7d8590; font-size: 1rem; }
+        .input-section {
+            background: #161b22;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #30363d;
+            margin-bottom: 20px;
+        }
+        .input-row { display: flex; gap: 12px; }
+        #entry-input {
+            flex: 1;
+            padding: 14px 18px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            color: #e6edf3;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #entry-input::placeholder { color: #484f58; }
+        #entry-input:focus {
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+        button {
+            padding: 14px 28px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #add-btn {
+            background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+            color: white;
+        }
+        #add-btn:hover {
+            background: linear-gradient(135deg, #2ea043 0%, #3fb950 100%);
+            transform: translateY(-1px);
+        }
+        .secondary {
+            background: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+        }
+        .secondary:hover { background: #30363d; }
+        .danger {
+            background: #21262d;
+            color: #f85149;
+            border: 1px solid #30363d;
+        }
+        .danger:hover { background: rgba(248, 81, 73, 0.1); border-color: #f85149; }
+        .hint { margin-top: 14px; font-size: 13px; color: #7d8590; }
+        .error {
+            margin-top: 14px;
+            padding: 12px 16px;
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid rgba(248, 81, 73, 0.4);
+            border-radius: 8px;
+            color: #f85149;
+            font-size: 14px;
+        }
+        .controls { display: flex; gap: 12px; margin-bottom: 24px; }
+        .entries {
+            background: #161b22;
+            border-radius: 12px;
+            border: 1px solid #30363d;
+            overflow: hidden;
+        }
+        .empty-state {
+            padding: 60px 40px;
+            text-align: center;
+            color: #7d8590;
+        }
+        .task-group { border-bottom: 1px solid #21262d; }
+        .task-group:last-child { border-bottom: none; }
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: #0d1117;
+        }
+        .task-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #e6edf3;
+        }
+        .task-total {
+            font-size: 14px;
+            font-weight: 500;
+            color: #3fb950;
+            background: rgba(63, 185, 80, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .task-entries { padding: 8px 20px 16px 20px; }
+        .entry {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 0;
+            border-bottom: 1px solid #21262d;
+            font-size: 14px;
+        }
+        .entry:last-child { border-bottom: none; }
+        .entry-date {
+            color: #7d8590;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 13px;
+            min-width: 90px;
+        }
+        .entry-duration {
+            color: #58a6ff;
+            font-weight: 500;
+            min-width: 65px;
+        }
+        .entry-times {
+            color: #7d8590;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 13px;
+        }
+        .entry-text {
+            color: #c9d1d9;
+            flex: 1;
+        }
+        .entry-delete {
+            background: none;
+            border: none;
+            color: #484f58;
+            cursor: pointer;
+            padding: 6px 10px;
+            font-size: 16px;
+            border-radius: 6px;
+            transition: all 0.15s;
+            line-height: 1;
+        }
+        .entry-delete:hover {
+            background: rgba(248, 81, 73, 0.15);
+            color: #f85149;
+        }
+        @media (max-width: 600px) {
+            body { padding: 16px; }
+            .input-row { flex-direction: column; }
+            .controls { flex-direction: column; }
+            .entry { flex-wrap: wrap; gap: 8px; }
+            .entry-text { width: 100%; order: 10; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Time Tracker</h1>
+            <p class="subtitle">Log your time using natural language</p>
+        </header>
+
+        <section class="input-section">
+            <div class="input-row">
+                <input type="text" id="entry-input" placeholder="e.g., Code review for 2h 30m" autocomplete="off">
+                <button id="add-btn">Add Entry</button>
+            </div>
+            <p class="hint">Try: "Meeting 9:00-11:00" or "Documentation for 45 minutes" or "ABC task 1h 30m"</p>
+            <p id="error-message" class="error" hidden></p>
+        </section>
+
+        <section class="controls">
+            <button id="export-btn" class="secondary">Export Excel</button>
+            <button id="clear-btn" class="danger">Clear All</button>
+        </section>
+
+        <section id="entries-container" class="entries"></section>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'timetracker_entries';
+
+        // Storage functions
+        function loadEntries() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch (e) { return []; }
+        }
+
+        function saveEntries(entries) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+        }
+
+        function addEntry(entry) {
+            const entries = loadEntries();
+            entry.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+            entries.push(entry);
+            saveEntries(entries);
+        }
+
+        function clearAllEntries() {
+            localStorage.removeItem(STORAGE_KEY);
+        }
+
+        function deleteEntry(id) {
+            const entries = loadEntries();
+            const filtered = entries.filter(e => e.id !== id);
+            saveEntries(filtered);
+        }
+
+        // Date helpers
+        function getTodayISO() {
+            const d = new Date();
+            return d.getFullYear() + '-' +
+                   String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                   String(d.getDate()).padStart(2, '0');
+        }
+
+        function getYesterdayISO() {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            return d.getFullYear() + '-' +
+                   String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                   String(d.getDate()).padStart(2, '0');
+        }
+
+        // Parsing functions
+        function extractDate(text) {
+            let remaining = text;
+            let date = null;
+
+            const isoMatch = text.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+            if (isoMatch) {
+                date = isoMatch[1];
+                remaining = text.replace(isoMatch[0], ' ');
+                return { date, remaining };
+            }
+
+            const relMatch = text.match(/\b(today|yesterday)\b/i);
+            if (relMatch) {
+                date = relMatch[1].toLowerCase() === 'yesterday' ? getYesterdayISO() : getTodayISO();
+                remaining = text.replace(relMatch[0], ' ');
+                return { date, remaining };
+            }
+
+            return { date: null, remaining };
+        }
+
+        function extractTimeRange(text) {
+            let match = text.match(/from\s+(\d{1,2}):(\d{2})\s+to\s+(\d{1,2}):(\d{2})/i);
+            if (match) {
+                const startTime = match[1].padStart(2, '0') + ':' + match[2];
+                const endTime = match[3].padStart(2, '0') + ':' + match[4];
+                const remaining = text.replace(match[0], ' ');
+                return { found: true, startTime, endTime, remaining };
+            }
+
+            match = text.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+            if (match) {
+                const startTime = match[1].padStart(2, '0') + ':' + match[2];
+                const endTime = match[3].padStart(2, '0') + ':' + match[4];
+                const remaining = text.replace(match[0], ' ');
+                return { found: true, startTime, endTime, remaining };
+            }
+
+            return { found: false };
+        }
+
+        function calculateDuration(startTime, endTime) {
+            const [startH, startM] = startTime.split(':').map(Number);
+            const [endH, endM] = endTime.split(':').map(Number);
+            let startMinutes = startH * 60 + startM;
+            let endMinutes = endH * 60 + endM;
+            if (endMinutes <= startMinutes) {
+                endMinutes += 24 * 60;
+            }
+            return endMinutes - startMinutes;
+        }
+
+        function extractDuration(text) {
+            let match = text.match(/(\d+)\s*(?:h|hr|hours?)\s*(\d+)\s*(?:m|min|minutes?)/i);
+            if (match) {
+                const minutes = parseInt(match[1]) * 60 + parseInt(match[2]);
+                const remaining = text.replace(match[0], ' ');
+                return { found: true, minutes, remaining };
+            }
+
+            match = text.match(/(?:for\s+)?(\d+(?:\.\d+)?)\s*(?:h|hr|hours?)\b/i);
+            if (match) {
+                const minutes = Math.round(parseFloat(match[1]) * 60);
+                const remaining = text.replace(match[0], ' ');
+                return { found: true, minutes, remaining };
+            }
+
+            match = text.match(/(?:for\s+)?(\d+)\s*(?:m|min|minutes?)\b/i);
+            if (match) {
+                const minutes = parseInt(match[1]);
+                const remaining = text.replace(match[0], ' ');
+                return { found: true, minutes, remaining };
+            }
+
+            return { found: false };
+        }
+
+        function cleanTaskName(text) {
+            return text
+                .replace(/\s+/g, ' ')
+                .replace(/^[\s\-:,|]+/, '')
+                .replace(/[\s\-:,|]+$/, '')
+                .replace(/\b(on|for|from|starting|i performed|i did|i worked on)\s*$/i, '')
+                .replace(/^(i performed|i did|i worked on)\s*/i, '')
+                .trim();
+        }
+
+        function parseEntry(text) {
+            let workingText = text.trim();
+            let result = {
+                date: getTodayISO(),
+                durationMinutes: null,
+                startTime: null,
+                endTime: null,
+                taskName: null,
+                rawText: text,
+                createdAt: new Date().toISOString()
+            };
+
+            const dateResult = extractDate(workingText);
+            if (dateResult.date) {
+                result.date = dateResult.date;
+                workingText = dateResult.remaining;
+            }
+
+            const timeRangeResult = extractTimeRange(workingText);
+            if (timeRangeResult.found) {
+                result.startTime = timeRangeResult.startTime;
+                result.endTime = timeRangeResult.endTime;
+                result.durationMinutes = calculateDuration(timeRangeResult.startTime, timeRangeResult.endTime);
+                workingText = timeRangeResult.remaining;
+            } else {
+                const durationResult = extractDuration(workingText);
+                if (durationResult.found) {
+                    result.durationMinutes = durationResult.minutes;
+                    workingText = durationResult.remaining;
+                }
+            }
+
+            result.taskName = cleanTaskName(workingText);
+
+            if (!result.taskName) {
+                return { success: false, error: 'Could not find task name. Example: "Meeting for 1h"' };
+            }
+            if (!result.durationMinutes) {
+                return { success: false, error: 'Could not find duration. Try "2h", "30m", "1h 30m", or "9:00-10:30"' };
+            }
+
+            return { success: true, entry: result };
+        }
+
+        // Smart task matching - normalizes task names for grouping
+        function normalizeTaskName(name) {
+            // Lowercase and split into words
+            const words = name.toLowerCase()
+                .replace(/[^a-z0-9\s]/g, ' ')  // Remove punctuation
+                .split(/\s+/)
+                .filter(w => w.length > 0)
+                .sort();  // Sort alphabetically so "setup claude" == "claude setup"
+            return words.join(' ');
+        }
+
+        // Find the best existing task name that matches, or return the new one
+        function findMatchingTaskName(newName, existingEntries) {
+            const normalizedNew = normalizeTaskName(newName);
+
+            // Build a map of normalized names to their first occurrence (display name)
+            const taskMap = {};
+            existingEntries.forEach(entry => {
+                const normalized = normalizeTaskName(entry.taskName);
+                if (!taskMap[normalized]) {
+                    taskMap[normalized] = entry.taskName;
+                }
+            });
+
+            // If we find a match, return the existing display name
+            if (taskMap[normalizedNew]) {
+                return taskMap[normalizedNew];
+            }
+
+            return newName;
+        }
+
+        // Formatting
+        function formatDuration(minutes) {
+            if (minutes < 60) return minutes + 'm';
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return mins > 0 ? hours + 'h ' + mins + 'm' : hours + 'h';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Grouping and rendering - uses smart matching
+        function groupEntriesByTask(entries) {
+            const groups = {};
+            entries.forEach(entry => {
+                const key = normalizeTaskName(entry.taskName);
+                if (!groups[key]) {
+                    groups[key] = {
+                        displayName: entry.taskName,
+                        entries: [],
+                        totalMinutes: 0
+                    };
+                }
+                groups[key].entries.push(entry);
+                groups[key].totalMinutes += entry.durationMinutes;
+            });
+            Object.values(groups).forEach(group => {
+                group.entries.sort((a, b) => {
+                    const dateCompare = a.date.localeCompare(b.date);
+                    if (dateCompare !== 0) return dateCompare;
+                    return new Date(a.createdAt) - new Date(b.createdAt);
+                });
+            });
+            return groups;
+        }
+
+        function render() {
+            const entries = loadEntries();
+            const container = document.getElementById('entries-container');
+
+            if (entries.length === 0) {
+                container.innerHTML = '<p class="empty-state">No entries yet. Add your first time entry above.</p>';
+                return;
+            }
+
+            const groups = groupEntriesByTask(entries);
+            const sortedGroups = Object.values(groups).sort((a, b) => b.totalMinutes - a.totalMinutes);
+
+            let html = '';
+            sortedGroups.forEach(group => {
+                html += '<div class="task-group">';
+                html += '<div class="task-header">';
+                html += '<span class="task-name">' + escapeHtml(group.displayName) + '</span>';
+                html += '<span class="task-total">' + formatDuration(group.totalMinutes) + '</span>';
+                html += '</div>';
+                html += '<div class="task-entries">';
+                group.entries.forEach(entry => {
+                    html += '<div class="entry">';
+                    html += '<span class="entry-date">' + entry.date + '</span>';
+                    html += '<span class="entry-duration">' + formatDuration(entry.durationMinutes) + '</span>';
+                    if (entry.startTime && entry.endTime) {
+                        html += '<span class="entry-times">' + entry.startTime + '-' + entry.endTime + '</span>';
+                    }
+                    html += '<span class="entry-text">' + escapeHtml(entry.rawText) + '</span>';
+                    html += '<button class="entry-delete" data-id="' + entry.id + '">x</button>';
+                    html += '</div>';
+                });
+                html += '</div></div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Excel export (SpreadsheetML)
+        function exportToExcel() {
+            const entries = loadEntries();
+            if (entries.length === 0) {
+                alert('No entries to export.');
+                return;
+            }
+
+            const sorted = [...entries].sort((a, b) => {
+                const dateCompare = a.date.localeCompare(b.date);
+                if (dateCompare !== 0) return dateCompare;
+                return new Date(a.createdAt) - new Date(b.createdAt);
+            });
+
+            const escapeXml = (str) => {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
+            };
+
+            let xml = '<?xml version="1.0"?>\n';
+            xml += '<?mso-application progid="Excel.Sheet"?>\n';
+            xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" ';
+            xml += 'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
+            xml += '<Worksheet ss:Name="Time Log">\n<Table>\n';
+
+            xml += '<Row>\n';
+            xml += '<Cell><Data ss:Type="String">Task Name</Data></Cell>\n';
+            xml += '<Cell><Data ss:Type="String">Date</Data></Cell>\n';
+            xml += '<Cell><Data ss:Type="String">Duration Minutes</Data></Cell>\n';
+            xml += '<Cell><Data ss:Type="String">Duration (formatted)</Data></Cell>\n';
+            xml += '<Cell><Data ss:Type="String">Start Time</Data></Cell>\n';
+            xml += '<Cell><Data ss:Type="String">End Time</Data></Cell>\n';
+            xml += '<Cell><Data ss:Type="String">Raw Text</Data></Cell>\n';
+            xml += '<Cell><Data ss:Type="String">Created At</Data></Cell>\n';
+            xml += '</Row>\n';
+
+            sorted.forEach(entry => {
+                xml += '<Row>\n';
+                xml += '<Cell><Data ss:Type="String">' + escapeXml(entry.taskName) + '</Data></Cell>\n';
+                xml += '<Cell><Data ss:Type="String">' + escapeXml(entry.date) + '</Data></Cell>\n';
+                xml += '<Cell><Data ss:Type="Number">' + entry.durationMinutes + '</Data></Cell>\n';
+                xml += '<Cell><Data ss:Type="String">' + formatDuration(entry.durationMinutes) + '</Data></Cell>\n';
+                xml += '<Cell><Data ss:Type="String">' + escapeXml(entry.startTime || '') + '</Data></Cell>\n';
+                xml += '<Cell><Data ss:Type="String">' + escapeXml(entry.endTime || '') + '</Data></Cell>\n';
+                xml += '<Cell><Data ss:Type="String">' + escapeXml(entry.rawText) + '</Data></Cell>\n';
+                xml += '<Cell><Data ss:Type="String">' + escapeXml(entry.createdAt) + '</Data></Cell>\n';
+                xml += '</Row>\n';
+            });
+
+            xml += '</Table>\n</Worksheet>\n</Workbook>';
+
+            const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'time-log.xls';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Event handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('entry-input');
+            const addBtn = document.getElementById('add-btn');
+            const exportBtn = document.getElementById('export-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const errorEl = document.getElementById('error-message');
+
+            function showError(message) {
+                errorEl.textContent = message;
+                errorEl.hidden = false;
+            }
+
+            function hideError() {
+                errorEl.hidden = true;
+            }
+
+            function handleAdd() {
+                hideError();
+                const text = input.value.trim();
+                if (!text) {
+                    showError('Please enter a time entry.');
+                    return;
+                }
+                const result = parseEntry(text);
+                if (!result.success) {
+                    showError(result.error);
+                    return;
+                }
+
+                // Smart matching: use existing task name if similar one exists
+                const entries = loadEntries();
+                result.entry.taskName = findMatchingTaskName(result.entry.taskName, entries);
+
+                addEntry(result.entry);
+                input.value = '';
+                render();
+            }
+
+            addBtn.addEventListener('click', handleAdd);
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') handleAdd();
+            });
+            exportBtn.addEventListener('click', exportToExcel);
+            clearBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete all entries? This cannot be undone.')) {
+                    clearAllEntries();
+                    render();
+                }
+            });
+
+            document.getElementById('entries-container').addEventListener('click', function(e) {
+                if (e.target.classList.contains('entry-delete')) {
+                    const id = e.target.getAttribute('data-id');
+                    deleteEntry(id);
+                    render();
+                }
+            });
+
+            render();
+        });
+    </script>
+</body>
+</html>
